@@ -670,7 +670,7 @@ export default function CaughtAtCBSApp() {
           </div>
           {pm && (
             <div className="preeti-badge">
-              ✦ Preeti Mode Active ✦
+              💅 Preeti Mode Active ✦
             </div>
           )}
         </div>
