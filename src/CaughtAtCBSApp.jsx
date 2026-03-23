@@ -29,9 +29,9 @@ const PREETI_PLACEHOLDERS = [
 ]
 
 const NORMAL_PLACEHOLDERS = [
-  'Aarav', 'Kiara', 'Rohan', 'Priya', 'Dev',
-  'Ananya', 'Rahul', 'Sneha', 'Arjun', 'Isha',
-  'Vivek', 'Meera', 'Karan', 'Pooja', 'Nikhil',
+  'Priyanshu', 'Vanshika', 'Pradeep', 'Shambhavi', 'Prachi',
+  'Anjaly', 'Gargi', 'Arjun', 'Nidhi', 'Rohan',
+  'Sneha', 'Kartik', 'Divya', 'Ishaan', 'Preeti',
 ]
 
 const EASTER_EGG_TAPS = 10
@@ -698,7 +698,7 @@ export default function CaughtAtCBSApp() {
                   <input
                     type="text"
                     value={value}
-                    placeholder={placeholders[idx % placeholders.length]}
+                    placeholder={`e.g. ${placeholders[idx % placeholders.length]}`}
                     onChange={(e) => {
                       const next = [...nameInputs]
                       next[idx] = e.target.value
