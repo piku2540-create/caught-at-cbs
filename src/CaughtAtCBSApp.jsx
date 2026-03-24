@@ -150,7 +150,7 @@ export default function CaughtAtCBSApp() {
     if (preetiMode) {
       chosenTargetWord = pickRandom(PREETI_WORDS)
     } else {
-      const useConfusion = Math.random() < 0.2
+      const useConfusion = Math.random() < 0.35
       chosenTargetWord = pickRandom(WORDS)
       if (useConfusion && CONFUSION_PAIRS.length > 0) {
         const pair = pickRandom(CONFUSION_PAIRS)
