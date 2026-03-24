@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const WORDS_RAW = `
-Audi, Amphitheatre, Library Basement, Reading Room, Admin Office, Seminar Hall, Computer Lab, Ground, Badminton Court, Parking Area, Main Gate, Back Gate, Notice Board, Lift Area, Faculty Block, CR Desk, Attendance Sheet, ID Check, Security Guard, Free Period, Bansiwala, Pan Hub, Nescafe, Amul, Samosa, Maggi, Cold Coffee, Canteen Rush, Chai Break,
-67% Rule, Community Hours, Attendance Shortage, Internal Marks, Assignment Submission, Presentation PPT, Case Study, Group Project, Viva, Surprise Test, Mid Sem, End Sem, Notes Sharing, PDF Drive, Last Night Study, Proxy Attendance, Backlog Fear, CGPA Tension, Topper Pressure, Internals Boost, Exam Hall, Result Day, Marks Deduction, Deadline Extension,
-Proxy Lagana, Notes Bhej, Last Bench, Front Bench, CR Spam, WhatsApp Mute, LinkedIn Flex, Case Comp, Placement Brag, Mass Bunk, Bunk Fail, Faculty Roast, Freeloaders, Exam Anxiety, Sleep Class, Startup Ideas, Networking Fake, CV Building, Coffee Discussion, Random Fights, Situationship, Crush Spotting, Library Stalking, Attendance Panic, Fake Attendance, Gossip Circle, Night Study,
-Deloitte, EY, KPMG, ICICI, GD Round, Case Interview, HR Round, Placement Cell, Internship Hunt, Referral Jugaad, Rejection Mail, Offer Letter, Dream Company, Mock Interview, Aptitude Test, Resume Roast, LinkedIn Post, Consulting Dream, Finance Role, Alumni Connect,
-Rithala Metro, Metro Rush, Auto Wala, Rickshaw Deal, G3S Mall, Movie Bunk, Food Court, Gaming Zone, Escalator Gossip, Weekend Plan, After Chill, Metro Card, Ticket Line, Return Journey, Late Night,
-180DC, Enactus, FIC, FMA, FinX, Ecolution, Markit, Convergence, Dhwani, Communique, Blitz, Anthropos, APICS, Verve, Darkroom, Literary Society, Illuminati, IFSA, IMA, Bridges, Rotaract, Parivartan, Sadhana, Prayaag, Kronos, Nucleus, Lawrence, MI, QSA, Synergy, Yuva, Dreams,
-Soc Recruitments, PPT Rounds, Interview Shortlist, Core Team, General Member, OC Team, POR Flex, Soc Deadlines, Event Volunteer, Soc Politics, Cross Rivalry, Recruitment Stress,
-Crescendo, Crescendo Night, DJ Night, Prom Night, Fashion Show, CBS Championship, Band War, Dance Battle, Nerf War, Laser Tag, Zorbing, Blind Dating, Alla Prima, Soc Stalls, Afterparty,
-Local Train, Euphoria, Jal Band, Astitva, Amritva, Millind Gaba, KR$NA, DJ Ravator, DJ Sahil, DJ Rawal, Bharg, Live Concert, Crowd Hype, Front Row, Flashlight
+Audi, Library, Basement, Reading, Admin, Seminar, Lab, Ground, Court, Parking, Gate, Notice, Lift, Faculty,
+Bansiwala, Panhub, Nescafe, Amul, Samosa, Maggi, Coffee, Chai, Canteen,
+Attendance, Internals, Assignment, Presentation, Case, Project, Viva, Test, Midsem, Endsem, Notes, PDF, Deadline, Backlog, CGPA, Result, Exam,
+Proxy, Bunk, Bench, CR, WhatsApp, LinkedIn, Competition, Placement, Internship, Referral, Resume, Interview, Aptitude, Rejection, Offer,
+Roast, Sleep, Startup, Networking, Discussion, Fights, Situationship, Crush, Stalking, Panic, Gossip, Night,
+Metro, Rush, Auto, Rickshaw, Mall, Movie, Foodcourt, Gaming, Escalator, Weekend, Chill, Journey, Late,
+Enactus, FinX, Markit, Dhwani, Blitz, Verve, Rotaract, Parivartan, Kronos, Nucleus,
+Crescendo, Prom, Fashion, Dance, Battle, Zorbing, Dating, Stalls, Afterparty
 `
 
 const CONFUSION_PAIRS_RAW = `
-Audi|Seminar Hall, Nescafe|Amul, Samosa|Maggi, Cold Coffee|Chai Break, Library Basement|Reading Room, Ground|Badminton Court, Bansiwala|Pan Hub, Rithala Metro|Metro Station, G3S Mall|Mall, Proxy|Bunk, 67% Rule|Attendance Shortage, Community Hours|Punishment, Assignment|Case Study, Presentation|Viva, Deloitte|EY, KPMG|ICICI, GD Round|Interview, Resume|CV, FinX|FMA, Enactus|180DC, Blitz|Dhwani, Markit|Convergence, Kronos|Nucleus
+Audi|Seminar, Library|Reading, Nescafe|Amul, Samosa|Maggi, Coffee|Chai, Ground|Court, Metro|Auto, Mall|Movie, Proxy|Bunk, Assignment|Case, Presentation|Viva, Notes|PDF, Exam|Result, Resume|Interview, Enactus|FinX, Blitz|Dhwani, Markit|Verve, Kronos|Nucleus, Crescendo|Prom
 `
 
 const PREETI_WORDS = [
