@@ -15,6 +15,10 @@ const CONFUSION_PAIRS_RAW = `
 Audi|Seminar, Library|Reading, Nescafe|Amul, Samosa|Maggi, Coffee|Chai, Ground|Court, Metro|Auto, Mall|Movie, Proxy|Bunk, Assignment|Case, Presentation|Viva, Notes|PDF, Exam|Result, Resume|Interview, Enactus|FinX, Blitz|Dhwani, Markit|Verve, Kronos|Nucleus, Crescendo|Prom
 `
 
+const SABOTAGE_PAIRS_RAW = `
+Audi|Seminar, Library|Reading, Ground|Court, Gate|Parking, Lift|Gate, Nescafe|Canteen, Amul|Nescafe, Samosa|Maggi, Coffee|Chai, Chai|Coffee, Attendance|Internals, Assignment|Project, Case|Assignment, Presentation|Viva, Notes|PDF, Exam|Test, Midsem|Endsem, Result|Marks, Proxy|Bunk, Bench|Last Bench, CR|Group, WhatsApp|Group, LinkedIn|Resume, Placement|Internship, Interview|HR, Offer|Result, Crush|Stalking, Gossip|Talk, Fights|Argument, Sleep|Class, Discussion|Talk, Metro|Auto, Mall|Market, Movie|Mall, Foodcourt|Canteen, Escalator|Lift, Weekend|Chill, Journey|Travel, Enactus|FinX, Blitz|Dhwani, Markit|Verve, Crescendo|Fest, Dance|Performance, Battle|Competition, Stalls|Food, Afterparty|Party
+`
+
 const PREETI_WORDS = [
   'Nautbook', 'Maurr', 'Mokshh', 'Prignant', 'Dabit',
   'So-oft Lonching', 'No baje', 'Mouj', 'Paneer Roall',
@@ -76,6 +80,7 @@ function GlassButton({ children, onClick, variant = 'primary', disabled, preeti 
 export default function CaughtAtCBSApp() {
   const WORDS = useMemo(() => parseWords(WORDS_RAW), [])
   const CONFUSION_PAIRS = useMemo(() => parseConfusionPairs(CONFUSION_PAIRS_RAW), [])
+  const SABOTAGE_PAIRS = useMemo(() => parseConfusionPairs(SABOTAGE_PAIRS_RAW), [])
 
   const [phase, setPhase] = useState('lobby')
   const [playerCount, setPlayerCount] = useState(5)
@@ -89,6 +94,10 @@ export default function CaughtAtCBSApp() {
 
   const [turnIndex, setTurnIndex] = useState(0)
   const [revealVisible, setRevealVisible] = useState(false)
+
+  const [sabotageActive, setSabotageActive] = useState(false)
+  const [sabotagePlayerId, setSabotagePlayerId] = useState(null)
+  const [sabotageWord, setSabotageWord] = useState('')
 
   const [preetiMode, setPreetiMode] = useState(false)
   const [preetiFlash, setPreetiFlash] = useState(false)
@@ -161,11 +170,36 @@ export default function CaughtAtCBSApp() {
       }
     }
 
+    let didUseSabotage = false
+    let chosenSabotagePlayerId = null
+    let chosenSabotageWord = ''
+
+    if (!preetiMode && Math.random() < 0.20) {
+      const normalizedTarget = chosenTargetWord.toLowerCase()
+      const matchingPairs = SABOTAGE_PAIRS.filter(
+        (p) => p.a.toLowerCase() === normalizedTarget || p.b.toLowerCase() === normalizedTarget
+      )
+      if (matchingPairs.length > 0) {
+        const pair = pickRandom(matchingPairs)
+        const altWord = pair.a.toLowerCase() === normalizedTarget ? pair.b : pair.a
+        const nonImposters = newPlayers.filter((p) => p.id !== chosenImposter.id)
+        if (nonImposters.length > 0) {
+          const sabotagePlayer = pickRandom(nonImposters)
+          chosenSabotagePlayerId = sabotagePlayer.id
+          chosenSabotageWord = altWord
+          didUseSabotage = true
+        }
+      }
+    }
+
     setPlayers(newPlayers)
     setImposterId(chosenImposter.id)
     setTargetWord(chosenTargetWord)
     setImposterWord(chosenImposterWord)
     setConfusionUsed(didUseConfusion)
+    setSabotageActive(didUseSabotage)
+    setSabotagePlayerId(chosenSabotagePlayerId)
+    setSabotageWord(chosenSabotageWord)
     setTurnIndex(0)
     setRevealVisible(false)
     setPhase('turns')
@@ -201,12 +235,17 @@ export default function CaughtAtCBSApp() {
     setTargetWord('')
     setImposterWord('')
     setConfusionUsed(false)
+    setSabotageActive(false)
+    setSabotagePlayerId(null)
+    setSabotageWord('')
     setTurnIndex(0)
     setRevealVisible(false)
   }
 
   const activePlayer = players[turnIndex]
   const activeIsImposter = Boolean(activePlayer && activePlayer.id === imposterId)
+  const activeIsSaboteur = Boolean(activePlayer && sabotageActive && activePlayer.id === sabotagePlayerId)
+  const activeDisplayWord = activeIsSaboteur ? sabotageWord : targetWord
   const placeholders = preetiMode ? PREETI_PLACEHOLDERS : NORMAL_PLACEHOLDERS
 
   const pm = preetiMode
@@ -542,6 +581,17 @@ export default function CaughtAtCBSApp() {
       color: rgba(255, 214, 227, 0.98);
     }
 
+    .role-badge.saboteur {
+      border-color: rgba(255, 180, 40, 0.65);
+      background: rgba(255, 160, 20, 0.14);
+      box-shadow: 0 0 26px rgba(255, 160, 20, 0.20);
+      color: rgba(255, 240, 190, 0.98);
+      white-space: normal;
+      text-align: center;
+      line-height: 1.4;
+      padding: 8px 14px;
+    }
+
     .role-badge.small {
       font-size: 11px;
       padding: 5px 10px;
@@ -789,7 +839,7 @@ export default function CaughtAtCBSApp() {
                         Your word is
                       </div>
                       <div className="big-word" style={{ marginTop: 10 }}>
-                        {targetWord}
+                        {activeDisplayWord}
                       </div>
                       <div className="hint" style={{ marginTop: 8 }}>
                         Share clues and spot inconsistencies.
@@ -875,18 +925,36 @@ export default function CaughtAtCBSApp() {
               </div>
             </div>
 
+            {sabotageActive && (
+              <>
+                <div style={{ height: 10 }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div className="role-badge saboteur">
+                    🔀 Sabotage — {players.find((p) => p.id === sabotagePlayerId)?.name ?? '—'} had "{sabotageWord}"
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="divider" />
             <div className="players-list">
               {players.map((p) => {
                 const isImposter = p.id === imposterId
-                const wordShown = isImposter ? (confusionUsed ? imposterWord : '—') : targetWord
+                const isSaboteur = sabotageActive && p.id === sabotagePlayerId
+                const wordShown = isImposter
+                  ? (confusionUsed ? imposterWord : '—')
+                  : isSaboteur
+                  ? sabotageWord
+                  : targetWord
+                const badgeClass = isImposter ? 'imposter' : isSaboteur ? 'saboteur' : 'player'
+                const badgeLabel = isImposter ? 'IMPOSTER' : isSaboteur ? 'SABOTEUR' : 'PLAYER'
                 return (
                   <div key={p.id} className="player-card">
                     <div>
                       <div className="name">{p.name}</div>
                       <div style={{ marginTop: 8 }}>
-                        <div className={`role-badge ${isImposter ? 'imposter' : 'player'} small`}>
-                          {isImposter ? 'IMPOSTER' : 'PLAYER'}
+                        <div className={`role-badge ${badgeClass} small`}>
+                          {badgeLabel}
                         </div>
                       </div>
                     </div>
